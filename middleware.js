@@ -92,12 +92,12 @@ module.exports = function(compiler, options) {
 		}
 	}
 
-	webpackDevDirect.getFilenameFromUrl = getFilenameFromUrl.bind(this, context.options.publicPath, context.compiler.outputPath);
-	webpackDevDirect.waitUntilValid = shared.waitUntilValid;
-	webpackDevDirect.invalidate = shared.invalidate;
-	webpackDevDirect.close = shared.close;
-	webpackDevDirect.fileSystem = context.fs;
-	return webpackDevDirect;
+	webpackDevMiddleware.getFilenameFromUrl = getFilenameFromUrl.bind(this, context.options.publicPath, context.compiler.outputPath);
+	webpackDevMiddleware.waitUntilValid = shared.waitUntilValid;
+	webpackDevMiddleware.invalidate = shared.invalidate;
+	webpackDevMiddleware.close = shared.close;
+	webpackDevMiddleware.fileSystem = context.fs;
+	return webpackDevMiddleware;
 };
 
 // constructor for the middleware
@@ -116,7 +116,7 @@ module.exports.direct = function(compiler, options) {
 
 
 	// The middleware function
-	function webpackDevMiddleware(req, res, next) {
+	function webpackDevDirect(req, res, next) {
 		function goNext() {
 			if(!context.options.serverSideRender) return next();
 			shared.ready(function() {
@@ -182,11 +182,11 @@ module.exports.direct = function(compiler, options) {
 		}
 	}
 
-	webpackDevMiddleware.getFilenameFromUrl = getFilenameFromUrl.bind(this, context.options.publicPath, context.compiler.outputPath);
-	webpackDevMiddleware.waitUntilValid = shared.waitUntilValid;
-	webpackDevMiddleware.invalidate = shared.invalidate;
-	webpackDevMiddleware.close = shared.close;
-	webpackDevMiddleware.fileSystem = context.fs;
-	return webpackDevMiddleware;
+	webpackDevDirect.getFilenameFromUrl = getFilenameFromUrl.bind(this, context.options.publicPath, context.compiler.outputPath);
+	webpackDevDirect.waitUntilValid = shared.waitUntilValid;
+	webpackDevDirect.invalidate = shared.invalidate;
+	webpackDevDirect.close = shared.close;
+	webpackDevDirect.fileSystem = context.fs;
+	return webpackDevDirect;
 };
 
