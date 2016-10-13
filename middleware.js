@@ -4,7 +4,7 @@
  */
 var mime = require("mime");
 var getFilenameFromUrl = require("./lib/GetFilenameFromUrl");
-var Shared = require("./lib/shared");
+var Shared = require("./lib/Shared");
 var pathJoin = require("./lib/PathJoin");
 
 var HASH_REGEXP = /[0-9a-f]{10,}/;
