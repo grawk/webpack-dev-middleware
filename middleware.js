@@ -100,7 +100,7 @@ module.exports = function (compiler, options) {
 	return webpackDevMiddleware;
 };
 
-// constructor for the middleware
+// constructor for the direct interface
 module.exports.direct = function (compiler, options) {
 
 	var context = {
