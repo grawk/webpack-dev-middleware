@@ -11,7 +11,7 @@ var HASH_REGEXP = /[0-9a-f]{10,}/;
 
 
 // constructor for the middleware
-module.exports = function(compiler, options) {
+module.exports = function (compiler, options) {
 
 	var context = {
 		state: false,
@@ -29,7 +29,7 @@ module.exports = function(compiler, options) {
 	function webpackDevMiddleware(req, res, next) {
 		function goNext() {
 			if(!context.options.serverSideRender) return next();
-			shared.ready(function() {
+			shared.ready(function () {
 				res.locals.webpackStats = context.webpackStats;
 				next();
 			}, req);
@@ -52,7 +52,7 @@ module.exports = function(compiler, options) {
 					processRequest();
 					return;
 				}
-			} catch(e) {
+			} catch (e) {
 			}
 		}
 		// delay the request until we have a valid bundle
@@ -70,7 +70,7 @@ module.exports = function(compiler, options) {
 						throw "next";
 					}
 				}
-			} catch(e) {
+			} catch (e) {
 				return goNext();
 			}
 
@@ -101,7 +101,7 @@ module.exports = function(compiler, options) {
 };
 
 // constructor for the middleware
-module.exports.direct = function(compiler, options) {
+module.exports.direct = function (compiler, options) {
 
 	var context = {
 		state: false,
@@ -115,7 +115,7 @@ module.exports.direct = function(compiler, options) {
 	var shared = Shared(context);
 
 
-	// The middleware function
+	// The direct interface
 	function webpackDevDirect(opts, cb) {
 		var options = context.options;
 		var fs = context.fs;
@@ -130,27 +130,27 @@ module.exports.direct = function(compiler, options) {
 					processRequest();
 					return;
 				}
-			} catch(e) {}
+			} catch (e) {
+			}
 		}
 		// delay the request until we have a valid bundle
 		shared.ready(processRequest);
 		function processRequest() {
 			var stat = context.fs.statSync(filename);
 			if(!stat.isFile()) {
-				if(stat.isDirectory()) {
-					filename = pathJoin(filename, options.index || "index.html");
-					stat = fs.statSync(filename);
-					if(!stat.isFile()) throw "next";
-				} else {
-					throw "next";
-				}
+				return cb(new Error("invalid file was requested: " + filename));
 			}
+		}
 
-
-			var content = fs.readFileSync(filename);
+		fs.readFile(filename, function (err, content) {
+			if(err) {
+				return cb(new Error("error reading file: " + filename));
+			}
 			cb(null, content);
-		};
+		});
+
 	}
+
 
 	webpackDevDirect.waitUntilValid = shared.waitUntilValid;
 	webpackDevDirect.invalidate = shared.invalidate;
