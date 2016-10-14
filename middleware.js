@@ -140,18 +140,14 @@ module.exports.direct = function (compiler, options) {
 			if(!stat.isFile()) {
 				return cb(new Error("invalid file was requested: " + filename));
 			}
+			fs.readFile(filename, function (err, content) {
+				if(err) {
+					return cb(new Error("error reading file: " + filename));
+				}
+				cb(null, content);
+			});
 		}
-
-		fs.readFile(filename, function (err, content) {
-			if(err) {
-				return cb(new Error("error reading file: " + filename));
-			}
-			cb(null, content);
-		});
-
 	}
-
-
 	webpackDevDirect.waitUntilValid = shared.waitUntilValid;
 	webpackDevDirect.invalidate = shared.invalidate;
 	webpackDevDirect.close = shared.close;
