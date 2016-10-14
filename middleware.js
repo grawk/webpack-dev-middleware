@@ -116,73 +116,42 @@ module.exports.direct = function(compiler, options) {
 
 
 	// The middleware function
-	function webpackDevDirect(req, res, next) {
-		function goNext() {
-			if(!context.options.serverSideRender) return next();
-			shared.ready(function() {
-				res.locals.webpackStats = context.webpackStats;
-				next();
-			}, req);
-		}
-
-		if(req.method !== "GET") {
-			return goNext();
-		}
-
-		var filename = getFilenameFromUrl(context.options.publicPath, context.compiler.outputPath, req.url);
-		if(filename === false) return goNext();
-
+	function webpackDevDirect(opts, cb) {
+		var options = context.options;
+		var fs = context.fs;
+		var filename = opts.src;
 		// in lazy mode, rebuild on bundle request
-		if(context.options.lazy && (!context.options.filename || context.options.filename.test(filename)))
-			shared.rebuild();
+		if(options.lazy && (!options.filename || options.filename.test(filename)))
+			this.rebuild();
 
 		if(HASH_REGEXP.test(filename)) {
 			try {
-				if(context.fs.statSync(filename).isFile()) {
+				if(fs.statSync(filename).isFile()) {
 					processRequest();
 					return;
 				}
-			} catch(e) {
-			}
+			} catch(e) {}
 		}
 		// delay the request until we have a valid bundle
-		shared.ready(processRequest, req);
-
+		shared.ready(processRequest);
 		function processRequest() {
-			try {
-				var stat = context.fs.statSync(filename);
-				if(!stat.isFile()) {
-					if(stat.isDirectory()) {
-						filename = pathJoin(filename, context.options.index || "index.html");
-						stat = context.fs.statSync(filename);
-						if(!stat.isFile()) throw "next";
-					} else {
-						throw "next";
-					}
+			var stat = context.fs.statSync(filename);
+			if(!stat.isFile()) {
+				if(stat.isDirectory()) {
+					filename = pathJoin(filename, options.index || "index.html");
+					stat = fs.statSync(filename);
+					if(!stat.isFile()) throw "next";
+				} else {
+					throw "next";
 				}
-			} catch(e) {
-				return goNext();
 			}
 
-			// server content
-			var content = context.fs.readFileSync(filename);
-			content = shared.handleRangeHeaders(content, req, res);
-			res.setHeader("Access-Control-Allow-Origin", "*"); // To support XHR, etc.
-			res.setHeader("Content-Type", mime.lookup(filename) + "; charset=UTF-8");
-			res.setHeader("Content-Length", content.length);
-			if(context.options.headers) {
-				for(var name in context.options.headers) {
-					res.setHeader(name, context.options.headers[name]);
-				}
-			}
-			// Express automatically sets the statusCode to 200, but not all servers do (Koa).
-			res.statusCode = res.statusCode || 200;
-			if(res.send) res.send(content);
-			else res.end(content);
-		}
+
+			var content = fs.readFileSync(filename);
+			cb(null, content);
+		};
 	}
 
-	webpackDevDirect.getFilenameFromUrl = getFilenameFromUrl.bind(this, context.options.publicPath, context.compiler.outputPath);
 	webpackDevDirect.waitUntilValid = shared.waitUntilValid;
 	webpackDevDirect.invalidate = shared.invalidate;
 	webpackDevDirect.close = shared.close;
